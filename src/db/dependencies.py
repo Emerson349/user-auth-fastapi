@@ -3,8 +3,8 @@ from .init_db import SessionLocal
 from sqlalchemy.orm import Session, sessionmaker
 from ..models.user import User
 from jose import jwt, JWTError
-from ..config import SECRET_KEY, ALGORITHM
-from ..main import oauth2_schema
+from src.app.main import SECRET_KEY, ALGORITHM
+from src.app.main import oauth2_schema
 
 def get_db():
     db = SessionLocal()
