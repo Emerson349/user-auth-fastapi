@@ -18,3 +18,4 @@ class User(Base):
         self.password = password
         self.active = active
         self.admin = admin
+    

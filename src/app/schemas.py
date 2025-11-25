@@ -32,11 +32,22 @@ class Order_create(BaseModel):
     class Config:
         from_attributes = True
 
+class Item_schema(BaseModel):
+    name: str
+    amount: int
+    flavor: str
+    unit_price: float
+    size: str
+
+    class Config:
+        from_attributes = True
+
 class Order_read(BaseModel):
     id: int
     status: str
     user: User_read
-    price: float
+    price: float 
+    itens: list[Item_schema]
 
     class Config:
         from_attributes = True

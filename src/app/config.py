@@ -2,10 +2,9 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-ENV_PATH = BASE_DIR / ".env"
+ENV_PATH = Path.cwd() / ".env"
 
-load_dotenv(dotenv_path=ENV_PATH)
+load_dotenv(ENV_PATH)
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")

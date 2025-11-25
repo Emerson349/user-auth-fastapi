@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from src.models.order import Order
 from src.models.user import User
-from src.app.schemas import Order_create, Order_read
+from src.models.items import Item
+from src.app.schemas import Order_create, Order_read, Item_schema
 from src.db.dependencies import get_db, verify_token
 
 
@@ -33,16 +34,42 @@ async def cancel_order(order_id: int, db: Session = Depends(get_db), user: User 
         "mensagem": f"pedido {order_id} cancelado com sucesso!"
     }
 
-@order_route.get("/order/list_orders")
-async def get_orders(user_id: int ,db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id==user_id).first()
-    if not user:
-        raise HTTPException(404, "Usuario não cadastrado")
-    orders = db.query(Order).filter(Order.user==user_id).all()
+@order_route.get("/order/list_orders", response_model=Item_schema)
+async def get_orders(db: Session = Depends(get_db), user: User = Depends(verify_token)):
+    if user.admin:
+        orders = db.query(Order).all()
+    else:
+        orders = db.query(Order).filter(Order.user==user.id).all()
     return {
         "user": user.name,
         "orders": orders
     }
 
+@order_route.post("/order/add-item/{order_id}")
+async def add_item_order(order_id: int, item_schema: Item_schema, db: Session = Depends(get_db), user: User = Depends(verify_token)):
+    order = db.query(Order).filter(Order.id==order_id).first()
+    if not order:
+        raise Exception(404, "Pedido não cadastrado")
+    if user.id != order.user and not user.admin:
+        raise Exception(401, "Acesso negado")
+    item = Item(item_schema.name, item_schema.amount, item_schema.unit_price, item_schema.flavor, item_schema.size, order_id)
+    order.update_price(item.unit_price * item.amount)
+    db.add(item)
+    db.commit()
+    return {
+        "mensagem": f"Item adicionado ao pedido de {user.name}",
+        "item": item_schema
+    }
 
-
+@order_route.post("/order/finish-order")
+async def finish_order(order_id: int, db: Session = Depends(get_db), user: User = Depends(verify_token)):
+    order = db.query(Order).filter(Order.id==order_id).first()
+    if not order:
+        raise Exception(404, "Pedido não cadastrado")
+    if user.id != order.user and not user.admin:
+        raise Exception(401, "Acesso negado")
+    order.status = "FINALIZADO" 
+    return {
+        "mensagem" : f"pedido {order_id} finalizado!",
+        "preco total" : f"R$ {order.price}" 
+    }

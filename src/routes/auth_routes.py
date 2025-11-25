@@ -16,7 +16,7 @@ def create_token(user_id: int, token_time = timedelta(minutes=ACCESS_TOKEN_EXPIR
     expirate_time = datetime.now(timezone.utc) + token_time
 
     info = {
-        "sub": str(user_id) ,
+        "sub": str(user_id),
         "exp": expirate_time
     }
     encoded_jwt = jwt.encode(info, SECRET_KEY, ALGORITHM)
