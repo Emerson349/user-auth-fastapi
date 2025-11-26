@@ -51,3 +51,10 @@ class Order_read(BaseModel):
 
     class Config:
         from_attributes = True
+
+class OrdersListResponse(BaseModel):
+    user: str
+    orders: list[Order_read]
+
+    class Config:
+        from_attributes = True

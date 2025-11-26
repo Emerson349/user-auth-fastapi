@@ -24,4 +24,4 @@ class Order(Base):
         self.price = price
 
     def update_price(self, valor: int):
-        self.preco += valor
+        self.price += valor

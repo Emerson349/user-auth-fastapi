@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.models.order import Order
 from src.models.user import User
 from src.models.items import Item
-from src.app.schemas import Order_create, Order_read, Item_schema
+from src.app.schemas import Order_create, Order_read, Item_schema, OrdersListResponse
 from src.db.dependencies import get_db, verify_token
 
 
@@ -34,7 +34,7 @@ async def cancel_order(order_id: int, db: Session = Depends(get_db), user: User 
         "mensagem": f"pedido {order_id} cancelado com sucesso!"
     }
 
-@order_route.get("/order/list_orders", response_model=Item_schema)
+@order_route.get("/order/list_orders")
 async def get_orders(db: Session = Depends(get_db), user: User = Depends(verify_token)):
     if user.admin:
         orders = db.query(Order).all()
@@ -69,6 +69,9 @@ async def finish_order(order_id: int, db: Session = Depends(get_db), user: User 
     if user.id != order.user and not user.admin:
         raise Exception(401, "Acesso negado")
     order.status = "FINALIZADO" 
+    db.add(order)
+    db.commit()
+    db.refresh(order)
     return {
         "mensagem" : f"pedido {order_id} finalizado!",
         "preco total" : f"R$ {order.price}" 
